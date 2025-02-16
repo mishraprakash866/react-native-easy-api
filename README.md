@@ -1,150 +1,112 @@
-# useApiEasy Documentation
+# useApiEasy Hook
 
-## Introduction
-
-`useApiEasy` is a powerful and easy-to-use React Hook for handling API requests in React and React Native applications. It simplifies data fetching, caching, error handling, and request aborting using the Fetch API.
-
-## Installation
-
-```sh
-npm install react-native-use-api-easy
-```
-
-or
-
-```sh
-yarn add react-native-use-api-easy
-```
+`useApiEasy` is a custom React hook designed to simplify API calls while providing built-in support for caching, request aborting, and handling initial API calls.
 
 ## Features
 
-- ✅ Simple API Calls
-- ✅ Built-in Caching
-- ✅ Automatic AbortController Support
-- ✅ Auto Fetch on Mount
-- ✅ Manual and Forced API Calls
-- ✅ Error Handling
-- ✅ Loading State Management
+- ✅ **Supports API calls with arguments**
+- ✅ **Built-in caching mechanism** (optional)
+- ✅ **Configurable cache expiration**
+- ✅ **Uses AbortController for request cancellation** (optional)
+- ✅ **Handles initial API calls automatically**
+- ✅ **Manages loading, error, and response states**
+
+---
+
+## Installation
+
+Since this is a custom hook, you can include it in your project by copying the `useApiEasy.ts` file into your project.
+
+```tsx
+import useApiEasy from './useApiEasy';
+```
+
+---
 
 ## Usage
 
-### 1️⃣ Basic API Call
+### Basic Example
 
 ```tsx
-import { useApiEasy } from 'react-native-easy-api';
-
-const fetchUsers = (signal) => {
-  return fetch('https://dummyjson.com/users', { signal }).then((res) =>
-    res.json()
-  );
+const fetchUserData = async (userId: string, signal?: AbortSignal) => {
+  const response = await fetch(`https://api.example.com/users/${userId}`, {
+    signal,
+  });
+  return response.json();
 };
 
 const MyComponent = () => {
-  const usersApi = useApiEasy({
-    apiPromise: fetchUsers,
+  const { isLoading, response, error, eventCall } = useApiEasy({
+    apiPromise: fetchUserData,
     initialCall: true,
-  });
-
-  if (usersApi.isLoading) return <Text>Loading...</Text>;
-  if (usersApi.error) return <Text>Error: {usersApi.error.message}</Text>;
-
-  return (
-    <FlatList
-      data={usersApi.response}
-      renderItem={({ item }) => <Text>{item.name}</Text>}
-      keyExtractor={(item) => item.id.toString()}
-    />
-  );
-};
-```
-
----
-
-### 2️⃣ Manual API Call (Trigger on Event)
-
-```tsx
-const fetchUserById = (id, signal) => {
-  return fetch(`https://dummyjson.com/users/${id}`, { signal }).then((res) =>
-    res.json()
-  );
-};
-
-const UserDetails = () => {
-  const userApi = useApiEasy({
-    apiPromise: fetchUserById,
-    initialCall: false,
+    initialArg: '123',
+    useAbortController: true,
+    enableCache: true,
+    cacheExpiryMs: 60000, // Cache expires after 60 seconds
   });
 
   return (
-    <View>
-      <Button title="Fetch User" onPress={() => userApi.eventCall(1)} />
-      {userApi.isLoading && <Text>Loading...</Text>}
-      {userApi.response && <Text>{userApi.response.name}</Text>}
-    </View>
+    <div>
+      {isLoading && <p>Loading...</p>}
+      {error && <p>Error: {error.message}</p>}
+      {response && <p>User Name: {response.name}</p>}
+      <button onClick={() => eventCall('123', true)}>Refresh Data</button>
+    </div>
   );
 };
 ```
-
----
-
-### 3️⃣ Enable Caching
-
-```tsx
-const productsApi = useApiEasy({
-  apiPromise: fetchProductsByCategory,
-  enableCache: true,
-  initialCall: false,
-});
-```
-
-- Data will be **stored in cache** and retrieved if available.
-
----
-
-### 4️⃣ Force Refresh (Ignore Cache)
-
-```tsx
-<Button
-  title="Force Refresh"
-  onPress={() => productsApi.forceCall('electronics')}
-/>
-```
-
-- Forces a fresh API call, bypassing the cache.
-
----
-
-### 5️⃣ Abort API Call
-
-```tsx
-<Button title="Abort Request" onPress={() => productsApi.abort()} />
-```
-
-- Cancels an ongoing API request.
 
 ---
 
 ## API Reference
 
-| Option               | Type     | Default | Description                                          |
-| -------------------- | -------- | ------- | ---------------------------------------------------- |
-| `apiPromise`         | Function | `null`  | The function to call the API (must return a Promise) |
-| `initialCall`        | Boolean  | `false` | Whether to fetch data on mount                       |
-| `useAbortController` | Boolean  | `false` | Enables request abortion support                     |
-| `enableCache`        | Boolean  | `false` | Enables caching of API responses                     |
+### `useApiEasy<T, Arg>`
 
-## Methods
+#### **Parameters**
 
-| Method            | Description                               |
-| ----------------- | ----------------------------------------- |
-| `eventCall(args)` | Manually trigger API call with parameters |
-| `forceCall(args)` | Force fresh API call, ignoring cache      |
-| `abort()`         | Abort the current request                 |
+| Parameter            | Type                                              | Description                                                                                           |
+| -------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `apiPromise`         | `(arg?: Arg, signal?: AbortSignal) => Promise<T>` | Required function that performs the API call. It optionally accepts an argument and an `AbortSignal`. |
+| `initialCall`        | `boolean`                                         | If `true`, the API call is triggered immediately when the hook is mounted. Default: `false`.          |
+| `initialArg`         | `Arg`                                             | Initial argument to be used if `initialCall` is `true`.                                               |
+| `useAbortController` | `boolean`                                         | Enables request cancellation via `AbortController`. Default: `false`.                                 |
+| `enableCache`        | `boolean`                                         | Enables caching of API responses. Default: `false`.                                                   |
+| `cacheExpiryMs`      | `number`                                          | Cache expiration time in milliseconds. If `undefined`, cache never expires.                           |
 
-## Conclusion
+#### **Returns**
 
-`useApiEasy` simplifies API handling in React and React Native applications by providing an intuitive API with caching, error handling, and request management. 🚀
+| Return Value | Type                                              | Description                                                                               |
+| ------------ | ------------------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `isLoading`  | `boolean`                                         | Indicates whether the API call is in progress.                                            |
+| `response`   | `T                                                | null`                                                                                     | Holds the API response data or `null` if no response is available. |
+| `error`      | `Error                                            | null`                                                                                     | Contains any error encountered during the API call.                |
+| `eventCall`  | `(arg?: Arg, forceFresh?: boolean) => Promise<T>` | Function to manually trigger an API call. `forceFresh` bypasses cache when set to `true`. |
+| `abort`      | `() => void`                                      | Function to cancel an ongoing API request (if `useAbortController` is enabled).           |
 
 ---
 
-**Enjoy coding with **``**!**
+## Advanced Usage
+
+### **Using `forceFresh` to Ignore Cache**
+
+```tsx
+<button onClick={() => eventCall('123', true)}>Fetch Fresh Data</button>
+```
+
+### **Handling API Abort**
+
+```tsx
+<button onClick={abort}>Cancel Request</button>
+```
+
+---
+
+## License
+
+MIT License.
+
+---
+
+## Contributing
+
+Feel free to submit pull requests or raise issues for improvements!
