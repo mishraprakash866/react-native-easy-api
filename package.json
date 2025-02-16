@@ -1,5 +1,5 @@
 {
-  "name": "use-api-easy",
+  "name": "react-native-use-api-easy",
   "version": "1.0.0",
   "description": "A simple API wrapper hook for React Native",
   "source": "./src/index.tsx",
