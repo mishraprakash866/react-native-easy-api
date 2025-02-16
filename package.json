@@ -1,7 +1,7 @@
 {
-  "name": "react-native-easy-api",
-  "version": "0.1.0",
-  "description": "Na",
+  "name": "use-api-easy",
+  "version": "1.0.0",
+  "description": "A simple API wrapper hook for React Native",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",
   "module": "./lib/module/index.js",
