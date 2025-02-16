@@ -7,13 +7,13 @@
 ## Installation
 
 ```sh
-npm install react-native-easy-api
+npm install use-api-easy
 ```
 
 or
 
 ```sh
-yarn add react-native-easy-api
+yarn add use-api-easy
 ```
 
 ## Features
